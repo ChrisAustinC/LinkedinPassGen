@@ -11,15 +11,15 @@ def get_linkedin_data(profile_url):
     response = requests.get(profile_url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Extract the public name and job title (if available)
+    # Extract public name and job title
     name = soup.find('h1', {'class': re.compile('.*text-heading-xlarge.*')})
     name = name.text.strip() if name else 'Unknown'
 
     headline = soup.find('div', {'class': re.compile('.*text-body-medium.*')})
     headline = headline.text.strip() if headline else ''
 
-    print(f"[+] Extracted Name: {name}")
-    print(f"[+] Extracted Headline: {headline}")
+    print "[+] Extracted Name: {}".format(name)
+    print "[+] Extracted Headline: {}".format(headline)
 
     return name, headline
 
@@ -28,7 +28,7 @@ def generate_passwords(name, headline):
     parts = name.split() + headline.split()
     parts = [p.lower() for p in parts]
 
-    # Substitutions: 'a' -> '@', 'i' -> '1', 'o' -> '0'
+    # Substitution rules: 'a' -> '@', 'i' -> '1', 'o' -> '0'
     substitutions = {'a': '@', 'i': '1', 'o': '0', 'e': '3', 's': '$'}
     substituted_parts = [
         ''.join(substitutions.get(char, char) for char in part)
@@ -48,7 +48,7 @@ def generate_passwords(name, headline):
         passwords.append(part + part)
         passwords.extend([part + year for year in years])
 
-    print(f"[+] Generated {len(passwords)} passwords.")
+    print "[+] Generated {} passwords.".format(len(passwords))
     return passwords
 
 # Step 3: Save passwords to a file
@@ -56,7 +56,7 @@ def save_passwords(password_list, filename='linkedin_passwords.txt'):
     with open(filename, 'w') as f:
         for password in password_list:
             f.write(password + '\n')
-    print(f"[+] Passwords saved to {filename}")
+    print "[+] Passwords saved to {}".format(filename)
 
 # Main function to run the script
 def main():
