@@ -1,0 +1,69 @@
+import requests
+from bs4 import BeautifulSoup
+import itertools
+import re
+
+# Step 1: Extract public LinkedIn profile data
+def get_linkedin_data(profile_url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
+    }
+    response = requests.get(profile_url, headers=headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Extract the public name and job title (if available)
+    name = soup.find('h1', {'class': re.compile('.*text-heading-xlarge.*')})
+    name = name.text.strip() if name else 'Unknown'
+
+    headline = soup.find('div', {'class': re.compile('.*text-body-medium.*')})
+    headline = headline.text.strip() if headline else ''
+
+    print(f"[+] Extracted Name: {name}")
+    print(f"[+] Extracted Headline: {headline}")
+
+    return name, headline
+
+# Step 2: Generate password combinations
+def generate_passwords(name, headline):
+    parts = name.split() + headline.split()
+    parts = [p.lower() for p in parts]
+
+    # Substitutions: 'a' -> '@', 'i' -> '1', 'o' -> '0'
+    substitutions = {'a': '@', 'i': '1', 'o': '0', 'e': '3', 's': '$'}
+    substituted_parts = [
+        ''.join(substitutions.get(char, char) for char in part)
+        for part in parts
+    ]
+
+    # Add years and special characters
+    years = ['2021', '2022', '2023', '123']
+    special_chars = ['!', '@', '#', '$']
+
+    # Generate password combinations
+    base_combinations = itertools.product(substituted_parts, years, special_chars)
+    passwords = [''.join(comb) for comb in base_combinations]
+
+    # Add double-word patterns (e.g., "johnjohn", "ceo2022!")
+    for part in substituted_parts:
+        passwords.append(part + part)
+        passwords.extend([part + year for year in years])
+
+    print(f"[+] Generated {len(passwords)} passwords.")
+    return passwords
+
+# Step 3: Save passwords to a file
+def save_passwords(password_list, filename='linkedin_passwords.txt'):
+    with open(filename, 'w') as f:
+        for password in password_list:
+            f.write(password + '\n')
+    print(f"[+] Passwords saved to {filename}")
+
+# Main function to run the script
+def main():
+    profile_url = raw_input("[*] Enter the LinkedIn profile URL: ").strip()
+    name, headline = get_linkedin_data(profile_url)
+    passwords = generate_passwords(name, headline)
+    save_passwords(passwords)
+
+if __name__ == "__main__":
+    main()
