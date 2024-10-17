@@ -1,22 +1,21 @@
 import requests
-from bs4 import BeautifulSoup
 import itertools
 import re
 
-# Step 1: Extract public LinkedIn profile data
+# Step 1: Extract data from the LinkedIn profile using regex
 def get_linkedin_data(profile_url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
     }
     response = requests.get(profile_url, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
+    html_content = response.text
 
-    # Extract public name and job title
-    name = soup.find('h1', {'class': re.compile('.*text-heading-xlarge.*')})
-    name = name.text.strip() if name else 'Unknown'
+    # Use regex to extract name and headline
+    name_match = re.search(r'<h1.*?>(.*?)</h1>', html_content, re.DOTALL)
+    headline_match = re.search(r'<div.*?>(.*?)</div>', html_content, re.DOTALL)
 
-    headline = soup.find('div', {'class': re.compile('.*text-body-medium.*')})
-    headline = headline.text.strip() if headline else ''
+    name = name_match.group(1).strip() if name_match else 'Unknown'
+    headline = headline_match.group(1).strip() if headline_match else ''
 
     print "[+] Extracted Name: {}".format(name)
     print "[+] Extracted Headline: {}".format(headline)
